@@ -4,6 +4,23 @@ import subprocess
 import tempfile
 import whisper
 
+from lib.semdict import SemanticDict
+
+# set up the full effects table from https://aegisub.org/docs/latest/ass_tags/
+
+class Effect:
+    def __init__(self, name:str=None):
+        self.name = name
+
+class EffectBucket:
+    def __init__(self, load_file=None):
+        self.effects:SemanticDict
+        self.time_index:list[str] = [] # index by effect name
+        
+    def config(self):
+        
+        pass
+
 def generate_ass_subtitles_from_words(word_list, font="Arial Black", font_size=180, primary_color="&H00FFFFFF&", fade=True):
     """
     Generate an ASS subtitle file (as a string) from a list of (start, end, text) tuples.
@@ -11,7 +28,7 @@ def generate_ass_subtitles_from_words(word_list, font="Arial Black", font_size=1
 
     Parameters:
     - word_list: A list of tuples: (start_time, end_time, text)
-    - font: Font family for the subtitles.
+    - font: Default Font family for the subtitles.
     - font_size: Font size in points.
     - primary_color: ASS color code. Default: white.
     - fade: Boolean, if True adds a fade-in/out effect.
@@ -47,6 +64,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         end_h, end_m, end_s = seconds_to_hms(end_time)
 
         # Add fade if requested
+        # This is where the effects bucket comes into play
         effect_str = ""
         if fade:
             effect_str = r"{\fad(200,200)}"
