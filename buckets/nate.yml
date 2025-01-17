@@ -1,0 +1,75 @@
+config:
+    model: small
+    words: 1
+    threshold: 0.2
+    n: 3
+
+# For style overrides over default
+
+styles:
+  Default:
+    font: Francois One
+    font_size: 150
+    color: "FFFFFF"
+    border_color: "000000"
+    shadow_color: "000000"
+
+# Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding
+
+# effect syntax is [text tag, effect, effect value]
+# any value that has a space should use double quotes around it: ""
+# use double quotes on colors too
+effects:
+  - [believer, italic]
+  - [war, color, "0000FF"]
+  - [War, font_size, 280]
+  - [progress, rotate_z, 180]
+  - [poverty, color, "FF8888"]
+  - [technological, font_size, 100]
+  - [technology, rotate_x, 45]
+  - [benefits, emoji, "$$"]
+  - [money, emoji, "$$$"]
+  - [sustainable, font_family, "Century Schoolbook L"]
+  - [religion, font_family, "Inspiration"]
+  - [enterprise, font_family, "Pacifico"]
+  - [quality, font_family, "Z003"]
+  - [GPT, font_family, "Lato Light"]
+  - [agent, font_family, "Lato Light"]
+  - [code, font_size, 240]
+  - [notes, font_family, "Chilanka"]
+  - [repository, rotate_x, 45]
+  - [direction, rotate_y, -45]
+  - [wrong, strikeout]
+  - [something, blur_edges, 40]
+  - [whatever, blur_edges, 40]
+  - [transparent, alpha]
+  - [language model, font_family, "URW Chancery L"]
+  - [computer, font_family, "Ubuntu Mono"]
+  - [program, font_family, "Ubuntu Mono"]
+  - [prompt, font_family, "Space Mono"]
+  - [RAG, font_family, "Space Mono"]
+  - [martian, color, "FF0000"]
+  - [monster, color, "FF0000"]
+  - [tripods, color, "FF0000"]
+  - [drone, color, "FF0000"]
+  - [location, color, "00AAFF"]
+  - [item, color, "AAFF00"]
+  - [character, color, "33FF00"]
+  - [NPC, color, "33FF00"]
+  - [world, font_family, "URW Chancery L"]
+  - [generate, font_family, "Ubuntu Mono"]
+  - [lore, font_family, "Inspiration"]
+  - [hidden, alpha, 0.8]
+  - [event, italic]
+  - [near, rotate_y, 20]
+  - [Near, font_size, 280]
+  - [underground, underline]
+  - [far, rotate_y, -45]
+  - [Far, font_size, 88]
+  - [travel, font_family, "Century Schoolbook L"]
+  - [combat, color, "FF0000"]
+  - [adventure, font_family, "Pacifico"]
+  - [explosive, color, "FF5500"]
+  - [tool, color, "AAFF00"]
+  - [weapon, color, "FFAA00"]
+  - [happen, italic]

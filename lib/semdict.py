@@ -2,6 +2,7 @@
 # lks-ai/semdict by Nathaniel D. Gibson
 # This utility class is meant to serve as a quick way to semantically embed and recall any given textual data
 
+from typing import Any
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from scipy.spatial.distance import cosine
@@ -44,7 +45,7 @@ class SemanticDict:
         self.embeddings[key] = key_embedding
         self.data[key] = value
 
-    def get(self, key, n=1, threshold=0.83):
+    def get(self, key, n=1, threshold=0.83) -> tuple[str, Any, float]:
         """ Get top `n` nearest neighbors to the `key` below `threshold` distance away
 
         Args:

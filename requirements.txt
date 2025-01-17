@@ -1,2 +1,5 @@
 openai-whisper
 transformers
+prompt-owl
+scipy
+sentence_transformers

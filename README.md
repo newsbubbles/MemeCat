@@ -8,7 +8,7 @@ MemeCat extracts the audio from your video, uses [OpenAI’s Whisper](https://gi
 
 - **Automatic Transcription:** Leverages Whisper to translate the weird mumbling from your video into actual words.
 - **Customizable Fonts & Sizes:** Because your life’s calling is to find the perfect font size that says, “I’m screaming, and so is this caption.”
-- **Optional Fade Effects:** Add subtle fades or skip the drama entirely. It’s your show.
+- **Automatic Effects based on Captions:** Base font style, emojis, etc. off of specific words or concepts you set. It uses AI just so you know it's 2025.
 
 ## Requirements
 
@@ -17,20 +17,26 @@ MemeCat extracts the audio from your video, uses [OpenAI’s Whisper](https://gi
    ```bash
    sudo apt-get update && sudo apt-get install ffmpeg
    ```
-3. **Whisper**: Install the OpenAI whisper (the correct one, not the bootleg knockoff):
+3. **Whisper**: For text to speech (the correct one, not the bootleg knockoff):
    ```bash
    pip install --upgrade openai-whisper
    ```
+4. **Lib ASS**: The Aegisub library. Yes, you read that right.
 
-## Installation
+## Installation on Linux
 
 ```bash
+sudo apt-get install libass-dev
 git clone https://github.com/newsbubbles/MemeCat.git
 cd MemeCat
 pip install -r requirements.txt
 ```
 
-*(If we forgot to include a requirements.txt, just pretend we did. Or just run `pip install openai-whisper` and hope for the best.)*
+## Installation on Windows
+
+... just the part after `sudo`?
+
+*yeah, I don't use windows.*
 
 ## Usage
 
@@ -49,9 +55,14 @@ This will:
 python memecat.py --input_video input.mp4 --output_video memefied.mp4 --font "Arial Black" --font_size 180
 ```
 
-**No Fade, All Business:**
+**Use a custom bucket YAML file:**
 ```bash
-python memecat.py --input_video input.mp4 --output_video no_fade.mp4 --no_fade
+python memecat.py --input_video input.mp4 --output_video output.mp4 --config "path/to/bucket.yml"
+```
+
+**Use the sentiment bucket:**
+```bash
+python memecat.py --input_video input.mp4 --output_video output.mp4 --config "buckets/sentiment.yml"
 ```
 
 **Pick a Different Model (Because ‘size’ matters):**
@@ -64,6 +75,10 @@ python memecat.py --input_video input.mp4 --output_video bigbrain.mp4 --model me
 - Because paying for a full-fledged NLE to add some freakin’ subtitles is like buying a private jet to visit your neighbor.
 - Because we stand for the open-source spirit of doing something incredibly niche without any sane reason.
 - Because cats are meme kings. Duh.
+
+## More about the YAML Files....
+
+There are two sample files in the buckets folder. These files allow you to change the way that the captions appear on a word or phrase basis. Take a look at (buckets/nate.yaml)[buckets/nate.yaml] to see more instructions and examples of one where I got all wild with my editing.
 
 ## License
 

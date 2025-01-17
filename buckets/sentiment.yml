@@ -1,0 +1,12 @@
+# Color based sentiment?
+# Use with threshold at or above 0.8 and n at 1 
+config:
+  threshold: 0.8
+
+effects:
+  - [progress, color, "00FF00"]
+  - [good, color, "00FF00"]
+  - [success, color, "00FF00"]
+  - [war, color, "FF0000"]
+  - [bad, color, "FF0000"]
+  - [poor, color, "FF0000"]
