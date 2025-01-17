@@ -76,9 +76,9 @@ python memecat.py --input_video input.mp4 --output_video bigbrain.mp4 --model me
 - Because we stand for the open-source spirit of doing something incredibly niche without any sane reason.
 - Because cats are meme kings. Duh.
 
-## More about the YAML Files....
+## More about the `.yml` Files....
 
-There are two sample files in the buckets folder. These files allow you to change the way that the captions appear on a word or phrase basis. Take a look at (buckets/nate.yaml)[buckets/nate.yaml] to see more instructions and examples of one where I got all wild with my editing.
+There are two sample files in the buckets folder. These files allow you to change the way that the captions appear on a word or phrase basis. Take a look at [buckets/nate.yml](buckets/nate.yml) to see more instructions and examples of one where I got all wild with my editing.
 
 ## License
 
