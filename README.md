@@ -10,6 +10,10 @@ MemeCat extracts the audio from your video, uses [OpenAI’s Whisper](https://gi
 - **Customizable Fonts & Sizes:** Because your life’s calling is to find the perfect font size that says, “I’m screaming, and so is this caption.”
 - **Automatic Effects based on Captions:** Base font style, emojis, etc. off of specific words or concepts you set. It uses AI just so you know it's 2025.
 
+## To the Corporate ppl Reading This (yes you ByteDance)
+
+This is only the expression of an idea or set of ideas that I had over a very short period of time. It would be stupid to try to just use my source code and incorporate it into a money making application. Consider hiring me or consulting because there are so many breakthrough ideas I have and know how to implement in this app... It would be in your best interest to invite me around rather than just cash grab steal my code. The resource is not the code, it is me, my experience, my programming art, and my professionalism which is the real value and return on investment. Consider contacting me.
+
 ## Requirements
 
 1. **Python 3.x**: Because it's not 1995.
