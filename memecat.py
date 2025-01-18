@@ -248,14 +248,14 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                         if isinstance(e, (Image, Video)):
                             print('IMAGE', e.arg)
                             # get the image from self.overlays
-                            ol = bucket.overlays.get(e.arg)
+                            ol = copy.deepcopy(bucket.overlays.get(e.arg))
                             # add times to overlay_effects
-                            ol['start_time'] = start_time
+                            ol['start_time'] = float(start_time)
                             duration = ol.get('duration')
                             if duration is None:
-                                ol['end_time'] = end_time
+                                ol['end_time'] = float(end_time)
                             else:
-                                ol['end_time'] = start_time + duration
+                                ol['end_time'] = float(start_time) + duration
                             overlays.append(ol)
                         effect_str += e.tag()
                 else:
@@ -264,8 +264,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             line = f"Dialogue: 0,{start_h}:{start_m}:{start_s:.2f},{end_h}:{end_m}:{end_s:.2f},Default,,0,0,0,,{effect_str}{text}{effect_str_end}"
             dialogue_lines.append(line)
             
-        #overlays:list[dict] = bucket.config_overlays(overlay_effects)
-
         return ass_header + "\n".join(dialogue_lines), overlays
     
     @staticmethod
@@ -317,13 +315,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         with open(ass_path, 'w', encoding='utf-8') as f:
             f.write(ass_content)
 
-        # Burn in subtitles onto the output video
-        # subprocess.run([
-        #     "ffmpeg", "-y", "-i", input_video, 
-        #     "-vf", f"ass={ass_path}", 
-        #     "-c:a", "copy", 
-        #     output_video
-        # ], check=True)
         MemeCat.write(input_video, output_video, ass_path, overlays=overlays)
 
         print(f"Done! Created {output_video} with burned-in subtitles.")
@@ -358,12 +349,15 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             alignments = {
                 "top-left": (margin_x, margin_y),
                 "top-center": (f"(main_w-overlay_w)/2+{margin_x}", margin_y),
+                "top": (f"(main_w-overlay_w)/2+{margin_x}", margin_y),
                 "top-right": (f"main_w-overlay_w-{margin_x}", margin_y),
                 "middle-left": (margin_x, f"(main_h-overlay_h)/2+{margin_y}"),
                 "middle-center": (f"(main_w-overlay_w)/2+{margin_x}", f"(main_h-overlay_h)/2+{margin_y}"),
+                "middle": (f"(main_w-overlay_w)/2+{margin_x}", f"(main_h-overlay_h)/2+{margin_y}"),
                 "middle-right": (f"main_w-overlay_w-{margin_x}", f"(main_h-overlay_h)/2+{margin_y}"),
                 "bottom-left": (margin_x, f"main_h-overlay_h-{margin_y}"),
                 "bottom-center": (f"(main_w-overlay_w)/2+{margin_x}", f"main_h-overlay_h-{margin_y}"),
+                "bottom": (f"(main_w-overlay_w)/2+{margin_x}", f"main_h-overlay_h-{margin_y}"),
                 "bottom-right": (f"main_w-overlay_w-{margin_x}", f"main_h-overlay_h-{margin_y}")
             }
             return alignments.get(alignment, alignments["top-center"])
