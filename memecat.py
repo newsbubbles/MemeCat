@@ -79,6 +79,11 @@ class Video(Effect):
     def tag(self):
         return ""
 
+class Audio(Effect):
+    """ Video does nothing to the text but acts as a trigger to grab from the bucket"""
+    def tag(self):
+        return ""
+
 class Color(Effect):
     """ Performs RGB->BRG conversion in the tag """
     def tag(self):
@@ -122,6 +127,7 @@ class EffectIndex:
         self.add(Emoji('emoji', None, arg_name='emoji', arg='😂'))
         self.add(Image('image', None, arg_name='src'))
         self.add(Video('video', None, arg_name='src'))
+        self.add(Audio('volume', None, arg_name='ratio', arg=0.5))
 
 class EffectBucket:
     """ Holds high level bucket of effects and styles """
@@ -223,6 +229,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
         dialogue_lines = []
         overlays:list[dict] = []
+        audio_effects:list[dict] = []
         
         for i in range(0, len(word_list), words_per_line):
             # get chunk and text
@@ -257,6 +264,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                             else:
                                 ol['end_time'] = float(start_time) + duration
                             overlays.append(ol)
+                        elif isinstance(e, Audio):
+                            el = {'volume': e.arg, 'start': float(start_time), 'end': float(end_time)}
+                            audio_effects.append(el)
                         effect_str += e.tag()
                 else:
                     effect_str = effect.tag()
@@ -264,7 +274,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             line = f"Dialogue: 0,{start_h}:{start_m}:{start_s:.2f},{end_h}:{end_m}:{end_s:.2f},Default,,0,0,0,,{effect_str}{text}{effect_str_end}"
             dialogue_lines.append(line)
             
-        return ass_header + "\n".join(dialogue_lines), overlays
+        return ass_header + "\n".join(dialogue_lines), overlays, audio_effects
     
     @staticmethod
     def burn(
@@ -300,7 +310,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             for seg in result['segments']:
                 word_list.append((seg['start'], seg['end'], seg['text'].strip()))
 
-        ass_content, overlays = MemeCat.generate_subtitles(
+        ass_content, overlays, audio_effects = MemeCat.generate_subtitles(
             word_list,
             bucket,
             font=font,
@@ -315,12 +325,12 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         with open(ass_path, 'w', encoding='utf-8') as f:
             f.write(ass_content)
 
-        MemeCat.write(input_video, output_video, ass_path, overlays=overlays)
+        MemeCat.write(input_video, output_video, ass_path, overlays=overlays, audio_effects=audio_effects)
 
         print(f"Done! Created {output_video} with burned-in subtitles.")
     
     @staticmethod
-    def write(video_path: str, output_path: str, ass_path: str, overlays: list[dict] = None, audio_copy=True):
+    def write(video_path: str, output_path: str, ass_path: str, overlays: list[dict] = None, audio_copy=True, audio_effects=None):
         """
         Write the captions and overlays onto a video with specific configurations.
 
@@ -374,8 +384,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 width = config.get('width', 'iw')  # Default to input width
                 height = config.get('height', 'ih')  # Default to input height
                 alignment = config.get('alignment', 'top-center')
-                margin_x = config.get('margin_x', 0)
-                margin_y = config.get('margin_y', 0)
+                margin_x = config.get('margin_x', 28)
+                margin_y = config.get('margin_y', 28)
                 
                 if config.get('x') is None or config.get('y') is None:
                     x, y = get_overlay_position(alignment, margin_x, margin_y)
@@ -416,9 +426,17 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         # Add filter complex
         command.extend(["-filter_complex", f'{combined_filters}'])
 
-        # Handle audio
-        if audio_copy:
+        # Handle audio filtering
+        if len(audio_effects) == 0: # just copy audio
             command.extend(["-c:a", "copy"])
+        else: # apply audio effects
+            combined_audio_filters = []
+            # TODO Audio can have effects beyond volume
+            #   using an audio library like torchaudio
+            #   NOTE would need to first extract audio, then formatting
+            for af in audio_effects:
+                combined_audio_filters.append(f"volume=enable='between(t,{af['start']},{af['end']})':volume={af['volume']}")
+            command.extend(["-af", ",".join(combined_audio_filters)])
 
         # Add output file
         command.append(output_path)

@@ -42,6 +42,16 @@ overlays:
     width: 900
     height: 500
     alignment: middle
+  laser-cat:
+    src: img/laser-cat.png
+    margin_y: 40
+    duration: 2.0
+  shiba-inu:
+    src: img/shiba-inu.png
+    alignment: middle
+  shit:
+    src: img/shit.png
+    alignment: middle
 
 # effect syntax is [text tag, effect, effect value]
 # any value that has a space should use double quotes around it: ""
@@ -104,3 +114,12 @@ effects:
   - [happen, italic]
   - [obvious, image, "prompt-owl"]
   - [spam, image, spam]
+  - ["63", font_family, "Lato Light"]
+  - ["80", font_family, "Lato Light"]
+  - ["%", font_family, "Lato Light"]
+  - [crypto, image, "shiba-inu"]
+  - [Crypto, volume, 0]
+  - [CRypto, alpha, 0]
+  - [look, image, "laser-cat"]
+  - [shit, image, shit]
+  - [not, color, "FF0000"]
