@@ -10,12 +10,13 @@ from lib.semdict import SemanticDict
 
 """
     MemeCat: smart subtitles, less work. By @newsbubbles on github (@natecodesai on YouTube)
-        Uses a semantic effects system
+        - Uses a semantic effects system
         semantic clipping based on text concept buckets
         long silence removal
         long context search for sticky styles!!!!
-        auto censoring: mute or cut out certain words/concepts
+        auto censoring: -mute or cut out certain words/concepts
         top_k words: top word analysis for showing which words
+        TODO change for multiple effects
 """
 
 # Utility
@@ -89,6 +90,12 @@ class Color(Effect):
     def tag(self):
         return "{\\" + self.ass_switch + str(rgb_mirror(self.arg) or '') + self.suffix + "}"
 
+class Alpha(Effect):
+    """ Performs (0.0, 1.0) ranged alpha to Hex FF inverted (ass format)"""
+    def tag(self):
+        trans = int(255 * (1.0 - float(self.arg)))
+        return "{\\" + self.ass_switch + str(hex(trans)).replace('0x', '') + self.suffix + "}"
+
 # Effect Bucket
         
 class EffectIndex:
@@ -110,7 +117,7 @@ class EffectIndex:
         self.add(Color('color', 'c&H', arg_name='GBR hex color', arg='FFFFFF', suffix='&'))
         self.add(Color('border_color', '3c&H', arg_name='RGB hex color', arg='000000', suffix='&'))
         self.add(Color('shadow_color', '4c&H', arg_name='RGB hex color', arg='000000', suffix='&'))
-        self.add(Effect('alpha', 'alpha&H', arg_name='alpha percent', arg=75, suffix='&'))
+        self.add(Alpha('alpha', 'alpha&H', arg_name='opacity', arg=0.75, suffix='&'))
         self.add(Effect('bold', 'b', arg_name='weight', arg=1))
         self.add(Effect('italic', 'i', arg_name='on', arg=1))
         self.add(Effect('underline', 'u', arg_name='on', arg=1))
@@ -160,7 +167,10 @@ class EffectBucket:
     def add_one(self, text:str, effect_name:str|dict, arg=1):
         e = self.init_effect(effect_name, arg=arg)
         if e is not None:
-            self.effects.add(text, e)
+            if text not in self.effects.data:
+                self.effects.add(text, [e])
+            else:
+                self.effects.data[text].append(e)
         else:
             raise ValueError(f"Effect {effect_name} not found.")
 
@@ -230,6 +240,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         dialogue_lines = []
         overlays:list[dict] = []
         audio_effects:list[dict] = []
+        top_k_words:dict[str, int] = {}
+        full_text = ""
         
         for i in range(0, len(word_list), words_per_line):
             # get chunk and text
@@ -237,6 +249,13 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             start_time = chunk[0][0]
             end_time = chunk[-1][1]
             text = " ".join(w[2] for w in chunk)
+            full_text += " " + text
+            
+            # get top_k for text frequency
+            wk = text.strip(r'.-!? ').lower()
+            if wk not in top_k_words:
+                top_k_words[wk] = 0
+            top_k_words[wk] += 1
             
             # find any n effects that should be applied given the text
             effect = bucket.search(text, threshold=threshold, n=search_n)
@@ -248,33 +267,38 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             effect_str, effect_str_end = "", ""
                 
             if effect is not None:
-                if isinstance(effect, list):
-                    for e in effect:
-                        # If Effect is an Image or video, add to the overlay_effects list
-                        # Idea is to output the timings so that the ffmpeg overlay process can insert correctly given the other settings
-                        if isinstance(e, (Image, Video)):
-                            print('IMAGE', e.arg)
-                            # get the image from self.overlays
-                            ol = copy.deepcopy(bucket.overlays.get(e.arg))
-                            # add times to overlay_effects
-                            ol['start_time'] = float(start_time)
-                            duration = ol.get('duration')
-                            if duration is None:
-                                ol['end_time'] = float(end_time)
-                            else:
-                                ol['end_time'] = float(start_time) + duration
-                            overlays.append(ol)
-                        elif isinstance(e, Audio):
-                            el = {'volume': e.arg, 'start': float(start_time), 'end': float(end_time)}
-                            audio_effects.append(el)
-                        effect_str += e.tag()
-                else:
-                    effect_str = effect.tag()
+                for eff in effect:
+                    if isinstance(eff, list):
+                        for e in eff:
+                            # If Effect is an Image or video, add to the overlay_effects list
+                            # Idea is to output the timings so that the ffmpeg overlay process can insert correctly given the other settings
+                            print(e)
+                            if isinstance(e, (Image, Video)):
+                                print('IMAGE', e.arg)
+                                # get the image from self.overlays
+                                ol = copy.deepcopy(bucket.overlays.get(e.arg))
+                                # add times to overlay_effects
+                                ol['start_time'] = float(start_time)
+                                duration = ol.get('duration')
+                                if duration is None:
+                                    ol['end_time'] = float(end_time)
+                                else:
+                                    ol['end_time'] = float(start_time) + duration
+                                overlays.append(ol)
+                            elif isinstance(e, Audio):
+                                el = {'volume': e.arg, 'start': float(start_time), 'end': float(end_time)}
+                                audio_effects.append(el)
+                            effect_str += e.tag()
+                    else:
+                        effect_str = eff.tag()
 
             line = f"Dialogue: 0,{start_h}:{start_m}:{start_s:.2f},{end_h}:{end_m}:{end_s:.2f},Default,,0,0,0,,{effect_str}{text}{effect_str_end}"
             dialogue_lines.append(line)
             
-        return ass_header + "\n".join(dialogue_lines), overlays, audio_effects
+        top_k = dict(sorted(top_k_words.items(), key=lambda item: item[1], reverse=True))
+        print(top_k)
+            
+        return ass_header + "\n".join(dialogue_lines), overlays, audio_effects, top_k, full_text
     
     @staticmethod
     def burn(
@@ -288,6 +312,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         font=None,
         font_size=None,
         primary_color=None,
+        ass_path="subtitles.ass",
     ):
         # Load up a bucket
         bucket = EffectBucket(bucket_path)
@@ -310,7 +335,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             for seg in result['segments']:
                 word_list.append((seg['start'], seg['end'], seg['text'].strip()))
 
-        ass_content, overlays, audio_effects = MemeCat.generate_subtitles(
+        ass_content, overlays, audio_effects, top_k, full_text = MemeCat.generate_subtitles(
             word_list,
             bucket,
             font=font,
@@ -321,7 +346,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             search_n=int(n),
         )
 
-        ass_path = "subtitles.ass"
         with open(ass_path, 'w', encoding='utf-8') as f:
             f.write(ass_content)
 
